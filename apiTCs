@@ -1,0 +1,430 @@
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+GET /v1/apiEndPoint
+
+1.1
+
+Scenario: To verify apiEndPoint end point returns list of all XYZ identities using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	When perform GET request 
+	Then verify responce code is 200
+	Then verify all XYZ identities recived in response are matching with XYZ identites present in DB
+
+1.2
+
+Scenario Outline: To verify apiEndPoint endpoint returns response as per query parameters using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with query paramter for <limit>  <offset> and <sort>
+	When perform GET request 
+	Then responce code is 200
+	Then verify response received is matching with data in DB
+	Then verify responce received is as per limit
+	Then verify responce received is as per offset
+	Then verify responce received is as per sort
+Examples:
+	| limit | offset | sort                |
+	| 20    | 12     | fkXYZIdentityId  |
+	| 34    | 16     | skillTemplateId     |
+    | 44    | 10     | -fkXYZIdentityId |
+	| 54    | 33     | -skillTemplateId    |
+	
+1.3
+
+Scenario: To verify resource not available response for apiEndPoint endpoint using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "v1/apiEndPoint"
+	And concatenate URI with "test"
+	When perform GET request 
+	Then verify responce code is 404
+	And verify response message is "Not Found"
+	
+1.4
+
+Scenario: To verify apiEndPoint end point for INVALID user using [GET]
+	Given access token is generated for INVALID user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	When perform GET request 
+	Then verify response code is 401
+	And verify response message is "Token is invalid, It does not have user information" 
+	
+1.5
+
+Scenario: To verify apiEndPoint end point 503 Error When DB is down using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And set DB unaccessible
+	When perform GET request
+	Then verify response code received is 503
+	Then verify response message "Database connectivity issue"
+	
+1.6
+
+Scenario: To verify Internal Server Error for apiEndPoint end point using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with "/;"
+	When perform GET request 
+	Then verify responce code is 500
+	And verify response message is "Internal Server Error"
+
+1.7
+
+Scenario: To verify bad request for apiEndPoint invalid sort parameter using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with invalid sort request "?sort=invalid"
+	When perform GET request
+	Then verify responce code is 400
+	Then verify response message "Sort Field value is not Valid"
+
+1.8
+
+Scenario Outline: To verify apiEndPoint end point returns bad request for limit using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And append limit as <limit> with endpoint
+	When perform GET request 
+	Then verify responce code is 400
+	Then verify response message "Limit Field value is not valid. Valid range is from 20 to 200"
+Examples:
+  | limit |
+  | 19    |
+  | 201   |
+  
+1.9
+
+Scenario: To verify apiEndPoint end point returns bad request for offset using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And set URI parameter for offset as "-1"
+	When perform GET request 
+	Then verify responce code is 400
+	Then verify response message "Offset Field value is not Valid. It should be 0 or positive"
+  
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+GET /v1/apiEndPoint/{template-id}
+
+2.1
+
+Scenario: To fetch list of XYZ IDs associated with a specific template-id using [GET]
+	Given An active access token is available for user
+	When User fetches a template ID from DB associated with multiple XYZ IDs 
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint/"
+	And concatenate URI with fetched templateID from DB
+	Then perform GET request 
+	Then responce code is 200
+	Then verify response received is matching with data in DB
+
+2.2
+
+Scenario Outline: To verify limit and offset for apiEndPoint/{templateID} endpoint using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with query paramter for <limit>  and <offset>
+	When perform GET request 
+	Then responce code is 200
+	Then verify response received is matching with data in DB
+	Then verify responce received is as per limit
+	Then verify responce received is as per offset
+Examples:
+	| limit | offset |
+	| 20    | 12     |
+	| 34    | 16     |
+    | 44    | 10     |
+	| 54    | 33     |
+	
+2.3
+
+Scenario: To verify resource not available response for apiEndPoint/{templateID} endpoint using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "v1/apiEndPoint/"
+	And concatenate URI with invalid templateID
+	When perform GET request 
+	Then verify responce code is 404
+	And verify response message is "SkillTemplateId does not exist"
+	
+2.4
+
+Scenario: To verify apiEndPoint/{templateID} end point for INVALID user using [GET]
+	Given access token is generated for INVALID user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with templateID as "/1234"
+	When perform GET request 
+	Then verify response code is 401
+	And verify response message is "Token is invalid, It does not have user information" 
+	
+2.5
+
+Scenario: To verify apiEndPoint/{templateID} end point 503 Error When DB is down using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+	And set DB unaccessible
+	When perform GET request
+	Then verify response code received is 503
+	Then verify response message "Database connectivity issue"
+	
+2.6
+
+Scenario: To verify Internal Server Error for apiEndPoint/{templateID} end point using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with "1234/;"
+	When perform GET request 
+	Then verify responce code is 500
+	And verify response message is "Internal Server Error"
+
+2.7
+
+Scenario Outline: To verify apiEndPoint/{templateID} end point returns bad request for limit using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+	And append limit as <limit> with URI
+	When perform GET request 
+	Then verify responce code is 400
+	Then verify response message "Limit Field value is not valid. Valid range is from 20 to 200"
+Examples:
+  | limit |
+  | 19    |
+  | 201   |
+  
+2.8
+
+Scenario: To verify apiEndPoint/{templateID} end point returns bad request for offset using [GET]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+	And set URI parameter for offset as "-1"
+	When perform GET request 
+	Then verify responce code is 400
+	Then verify response message "Offset Field value is not Valid. It should be 0 or positive"
+	
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+POST /v1/apiEndPoint
+
+3.1
+
+Scenario: To create new XYZ details with endpoint apiEndPoint using [POST]
+	Given An active access token is available for user
+	And the POST api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And prepare request body
+	When perform POST request
+	Then response code received is 201
+	Then verify new XYZ details are reflected in DB
+	
+3.2
+
+Scenario: To verify resource not available response for apiEndPoint endpoint using [POST]
+Given An active access token is available for user
+And the POST api is up and running with basepath and endpoint "/v1/apiEndPoint"
+And concatenate URI with random string
+And prepare request body with parameters
+When perform POST request
+Then response code received is 404
+
+3.3
+
+Scenario: To verify bad request for apiEndPoint endpoint using [POST]
+Given An active access token is available for user
+And the POST api is up and running with basepath and endpoint "/v1/apiEndPoint"
+And prepare request body with invalid parameters
+When perform POST request
+Then verify response code received is 400
+
+3.4
+
+Scenario: To verify apiEndPoint end point for invalid user using [POST]
+	Given access token is generated for invalid user
+	When the POST api is up with basepath and endpoint "/v1/apiEndPoint"
+	And prepare request body with parameters
+	When perform POST request
+	Then verify response code is 401
+	And verify response message is "Token is invalid, It does not have user information" 
+	
+3.5
+
+Scenario: To verify Internal Server Error for apiEndPoint end point using [POST]
+	Given An active access token is available for user
+	And the POST api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with "/;"
+	And prepare request body with parameters
+	When perform POST request 
+	Then verify responce code is 500
+	And verify response message is "Internal Server Error"
+	
+3.6
+
+Scenario: To verify apiEndPoint end point 503 Error When DB is down using [POST]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And set DB unaccessible
+	When perform POST request
+	Then verify response code received is 503
+	Then verify response message "Database connectivity issue"
+	
+3.7
+
+Scenario Outline: To verify bad request for apiEndPoint end point for different field using [POST]
+	Given An active access token is available for user
+	And the POST api is up and running with basepath and endpoint "/apiEndPoint"
+	And prepare request body
+	And replace <field> value with <value> in request body
+	When perform POST request
+	Then verify response code received is 400
+Examples:
+    | field              | value | 
+    | fkXYZIdentityId | null  |
+	| skillTemplateId    | null  |
+    | fkXYZIdentityId | -1    |
+	| skillTemplateId    | -1    |
+	
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+PUT v1/tskilltemplate/{template-id}
+
+4.1
+
+Scenario: To create update XYZ details with endpoint apiEndPoint using [PUT]
+	Given An active access token is available for user
+	And User fetches a template ID from DB associated with multiple XYZ IDs 
+	And the PUT api is up and running with basepath and endpoint "/v1/apiEndPoint"
+	And concatenate URI with templateID fetched from DB
+	And prepare request body with new XYZ details
+	And replace XYZ details to update in request body
+	And remove XYZ details from request body to delete XYZ details
+	When perform PUT request
+	Then verify response code received is 200
+	Then verify new XYZ details are reflected in DB for fetched template
+	Then verify XYZ details are updated in DB for fetched template
+	Then verify XYZ details are removed from DB for fetched template
+	
+4.2
+
+Scenario: To verify resource not available response for apiEndPoint endpoint using [PUT]
+Given An active access token is available for user
+And the PUT api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+And concatenate URI with random string
+And prepare request body with parameters
+When perform PUT request
+Then response code received is 404
+
+4.3
+
+Scenario: To verify bad request for apiEndPoint endpoint using [PUT]
+Given An active access token is available for user
+And the PUT api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+And prepare request body with invalid parameters
+When perform PUT request
+Then verify response code received is 400
+
+4.4
+
+Scenario: To verify apiEndPoint end point for invalid user using [PUT]
+	Given access token is generated for invalid user
+	When the PUT api is up with basepath and endpoint "/v1/apiEndPoint/1234"
+	And prepare request body with parameters
+	When perform PUT request
+	Then verify response code is 401
+	And verify response message is "Token is invalid, It does not have user information" 
+	
+4.5
+
+Scenario: To verify Internal Server Error for apiEndPoint end point using [PUT]
+	Given An active access token is available for user
+	And the PUT api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+	And concatenate URI with "/;"
+	And prepare request body with parameters
+	When perform PUT request 
+	Then verify responce code is 500
+	And verify response message is "Internal Server Error"
+	
+4.6
+
+Scenario: To verify apiEndPoint end point 503 Error When DB is down using [PUT]
+	Given An active access token is available for user
+	And the GET api is up and running with basepath and endpoint "/v1/apiEndPoint/1234"
+	And set DB unaccessible
+	When perform PUT request
+	Then verify response code received is 503
+	Then verify response message "Database connectivity issue"
+	
+4.7
+
+Scenario Outline: To verify bad request for apiEndPoint end point for different field using [PUT]
+	Given An active access token is available for user
+	And the PUT api is up and running with basepath and endpoint "/apiEndPoint/1234"
+	And prepare request body
+	And replace <field> value with <value> in request body
+	When perform PUT request
+	Then verify response code received is 400
+Examples:
+    | field              | value | 
+    | fkXYZIdentityId | null  |
+	| skillTemplateId    | null  |
+    | fkXYZIdentityId | -1    |
+	| skillTemplateId    | -1    |
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+DELETE /v1/apiEndPoint/{template-id}/XYZ-identity/{XYZ-id}
+
+5.1
+
+Scenario: To verify delete endpoint deletes XYZ details using [DELETE]
+	Given An active access token is available for user
+	And fetch a linked XYZID and templateID from DB
+	When the DELETE api is up with basepath and endpoint "/v1/apiEndPoint/{template-id}/XYZ-identity/{XYZ-id}"
+	And replace template-id in URI with fetched templateID
+	And replace XYZ-id in URI with fetched XYZID
+	When perform DELETE request
+	Then response code received is 200
+	Then verify XYZ details removed from DB
+	
+5.2
+
+Scenario: To verify resource not found status for apiEndPoint request using [DELETE]
+	Given An active access token is available for user
+	When DELETE api is up with basepath and endpoint "/v1/apiEndPoint/1234/XYZ-identity/1234"
+	When perform DELETE request
+	Then response code received is 404
+	And verify response message is "SkillTemplateId does not exist"
+	
+5.3
+
+Scenario: To verify apiEndPoint end point for invalid user using [DELETE]
+	Given access token is generated for invalid user
+	When DELETE api is up with basepath and endpoint "/v1/apiEndPoint/1234/XYZ-identity/1234"
+	When perform DELETE request
+	Then verify response code is 401
+	And verify response message is "Token is invalid, It does not have user information" 
+	
+5.4
+
+Scenario: To verify Internal Server Error for apiEndPoint end point using [DELETE]
+	Given An active access token is available for user
+	When DELETE api is up with basepath and endpoint "/v1/apiEndPoint/1234/XYZ-identity/1234"
+	And concatenate URI with "/;"
+	When perform DELETE request 
+	Then verify responce code is 500
+	And verify response message is "Internal Server Error"
+	
+5.5
+
+Scenario: To verify apiEndPoint end point 503 Error When DB is down using [DELETE]
+	Given An active access token is available for user
+	When DELETE api is up with basepath and endpoint "/v1/apiEndPoint/1234/XYZ-identity/1234"
+	And set DB unaccessible
+	When perform DELETE request
+	Then verify response code received is 503
+	Then verify response message "Database connectivity issue"
+	
+5.6 
+
+Scenario: To verify bad request for apiEndPoint using [DELETE]
+	Given An active access token is available for user
+	When DELETE api is up with basepath and endpoint "/v1/apiEndPoint/1234/XYZ-identity/invalidValue"
+	When perform DELETE request
+	Then verify responce code is 400
+	Then verify response message contains "Failed to convert value"
